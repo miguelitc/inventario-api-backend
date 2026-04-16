@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController // Le dice a Spring que este es un mesero que sirve datos (JSON)
 @RequestMapping("/api/v1/empleados") // La ruta principal para este mesero
 //@CrossOrigin(origins = "http://localhost:4200")
-@CrossOrigin(origins = "http://localhost:5173") // Permite que React se conecte
+//@CrossOrigin(origins = "http://localhost:5173") // Permite que React se conecte
+@CrossOrigin(origins = {"http://localhost:5173","http://localhost:4200", "https://inventario-react-frontend.vercel.app"})
 public class EmpleadoController {
 
     @Autowired

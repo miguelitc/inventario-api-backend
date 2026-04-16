@@ -17,7 +17,9 @@ import java.util.List;
 //para dejar pasar a Angular
 //@CrossOrigin(origins = "http://localhost:4200")s
 //para dejar pasar a React
-@CrossOrigin(origins = "http://localhost:5173")
+//@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173","http://localhost:4200", "https://inventario-react-frontend.vercel.app"})
+
 public class EquipoController {
 
     @Autowired

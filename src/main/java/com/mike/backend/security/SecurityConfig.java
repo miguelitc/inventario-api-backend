@@ -3,6 +3,7 @@ package com.mike.backend.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod; // 🚨 IMPORTACIÓN NUEVA AQUÍ
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,10 +31,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults()) // 1️⃣ ACTIVAMOS CORS A NIVEL DE SEGURIDAD
+            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                
+                // 👇 REGLAS DE ROLES ESTRICTAS 👇
+                // 1. Todos los logueados pueden ver la lista (GET)
+                .requestMatchers(HttpMethod.GET, "/api/equipos/**").authenticated()
+                
+                // 2. SOLO los ADMIN pueden crear, modificar o borrar
+                .requestMatchers(HttpMethod.POST, "/api/equipos/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/equipos/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/equipos/**").hasAuthority("ADMIN")
+                
+                // Cualquier otra cosa, solo con estar logueado
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -45,15 +57,11 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 2️⃣ LE DECIMOS EXACTAMENTE QUÉ RUTAS Y MÉTODOS DEJAR PASAR
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Ponemos la URL de tu frontend en local y la de Vercel
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://inventario-react-frontend.vercel.app"));
-        // Permitimos todos los métodos, incluyendo el famoso OPTIONS
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Permitimos que React nos mande el Token en el encabezado
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

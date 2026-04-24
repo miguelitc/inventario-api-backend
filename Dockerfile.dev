@@ -1,0 +1,26 @@
+# ETAPA 1: Compilación (Build)
+# Usamos una imagen de Maven con Java 17 para compilar tu código
+FROM maven:3.8.4-openjdk-21-slim AS build
+WORKDIR /app
+
+# Copiamos el archivo de configuración y descargamos dependencias
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copiamos todo el código fuente y generamos el archivo ejecutable .jar
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# ETAPA 2: Ejecución (Runtime)
+# Usamos una imagen muy ligera de Java solo para correr la app
+FROM openjdk:21-jdk-slim
+WORKDIR /app
+
+# Extraemos solo el .jar de la etapa 1 y tiramos el resto a la basura
+COPY --from=build /app/target/*.jar app.jar
+
+# Exponemos el puerto de Spring Boot
+EXPOSE 8080
+
+# El comando maestro que arranca tu API
+ENTRYPOINT ["java", "-jar", "app.jar"]
